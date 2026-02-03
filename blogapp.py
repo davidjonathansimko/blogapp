@@ -41,76 +41,51 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = None
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = "◻"
-if "page" not in st.session_state:
-    st.session_state.page = "login"
 if "edit_post_id" not in st.session_state:
     st.session_state.edit_post_id = None
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
 
 # -----------------------------
-# LOGIN / LOGOUT
-# -----------------------------
-def login_screen():
-    st.markdown(
-        """
-        <div style="text-align:center; margin-top:40px; margin-bottom:30px;">
-            <h1 style="margin-bottom:4px; font-family:'EB Garamond', serif;">Dein Blog</h1>
-            <p style="color:#6b7280; margin-top:0; font-size:14px;">Schreiben. Lesen. Denken. Minimal & klar.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    choice = st.radio("Modus wählen", ["Als Besucher fortfahren", "Einloggen"])
-
-    if choice == "Als Besucher fortfahren":
-        if st.button("Weiter als Besucher", use_container_width=True):
-            st.session_state.role = "visitor"
-            st.session_state.user_name = "Besucher"
-            st.session_state.user_avatar = "◻"
-            st.session_state.page = "app"
-
-    else:
-        st.subheader("Einloggen")
-        email = st.text_input("E-Mail")
-        pw = st.text_input("Passwort", type="password")
-        name = st.text_input("Anzeigename")
-        avatar = st.text_input("Avatar (einfaches Symbol)", value="◻")
-
-        if st.button("Login", use_container_width=True):
-            if email == ADMIN_EMAIL and pw == ADMIN_PASSWORD:
-                st.session_state.role = "admin"
-                st.session_state.user_name = name or "Admin"
-                st.session_state.user_avatar = avatar or "◆"
-            else:
-                st.session_state.role = "user"
-                st.session_state.user_name = name or "User"
-                st.session_state.user_avatar = avatar or "◻"
-            st.session_state.page = "app"
-
-def logout():
-    st.session_state.role = None
-    st.session_state.user_name = None
-    st.session_state.user_avatar = "◻"
-    st.session_state.page = "login"
-    st.session_state.edit_post_id = None
-
-# -----------------------------
-# HAUPT-NAVIGATION LOGIN
-# -----------------------------
-if st.session_state.page == "login":
-    login_screen()
-    st.stop()
-
-# -----------------------------
-# FONTS & THEME CSS
+# GLOBAL FONTS & BASE CSS
 # -----------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;700&family=Cinzel:wght@600;700&family=Montserrat:wght@300;400;500;600&display=swap');
 
     html, body, .stApp {
         font-family: 'Montserrat', sans-serif;
+    }
+
+    .hero-title {
+        font-family: 'Cinzel', serif;
+        font-size: 2.4rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .hero-sub {
+        font-family: 'EB Garamond', serif;
+        font-size: 0.95rem;
+        color: #6b7280;
+        margin-top: 0;
+    }
+
+    .hero-wrapper {
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .hero-animate {
+        transform: translateY(100%);
+        animation: slideUp 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+
+    @keyframes slideUp {
+        0% { transform: translateY(100%); opacity: 0; }
+        100% { transform: translateY(0%); opacity: 1; }
     }
 
     .post-card {
@@ -122,10 +97,12 @@ st.markdown(
     }
 
     .post-title {
-        font-family: 'EB Garamond', serif;
-        font-size: 1.4rem;
+        font-family: 'Cinzel', serif;
+        font-size: 1.3rem;
         font-weight: 600;
         margin-bottom: 4px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
     }
 
     .post-meta {
@@ -158,9 +135,11 @@ st.markdown(
     }
 
     .top-nav-title {
-        font-family: 'EB Garamond', serif;
+        font-family: 'Cinzel', serif;
         font-size: 1.5rem;
         font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
     }
 
     .badge {
@@ -171,14 +150,22 @@ st.markdown(
         border:1px solid #d1d5db;
         color:#4b5563;
     }
+
+    .login-label {
+        font-family: 'EB Garamond', serif;
+        font-size: 0.95rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-dark_mode = st.sidebar.toggle("Dark Mode", value=False)
+# -----------------------------
+# DARK / LIGHT MODE
+# -----------------------------
+st.session_state.dark_mode = st.sidebar.toggle("Dark Mode", value=st.session_state.dark_mode)
 
-if dark_mode:
+if st.session_state.dark_mode:
     st.markdown(
         """
         <style>
@@ -204,6 +191,67 @@ else:
     )
 
 # -----------------------------
+# LOGIN / LOGOUT
+# -----------------------------
+def login_screen():
+    st.markdown(
+        """
+        <div style="text-align:center; margin-top:40px; margin-bottom:30px;">
+            <div class="hero-wrapper">
+                <div class="hero-animate">
+                    <div class="hero-title">Dein Blog</div>
+                </div>
+            </div>
+            <p class="hero-sub">Schreiben · Lesen · Denken – minimal und klar.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<p class="login-label">Modus wählen</p>', unsafe_allow_html=True)
+    choice = st.radio("", ["Als Besucher fortfahren", "Einloggen"])
+
+    if choice == "Als Besucher fortfahren":
+        st.markdown('<p class="login-label">Als Besucher fortfahren</p>', unsafe_allow_html=True)
+        if st.button("Weiter als Besucher", use_container_width=True):
+            st.session_state.role = "visitor"
+            st.session_state.user_name = "Besucher"
+            st.session_state.user_avatar = "◻"
+    else:
+        st.markdown('<p class="login-label">Einloggen</p>', unsafe_allow_html=True)
+        email = st.text_input("E-Mail")
+        pw = st.text_input("Passwort", type="password")
+        st.markdown('<p class="login-label">Anzeigename</p>', unsafe_allow_html=True)
+        name = st.text_input("", key="login_name")
+        st.markdown('<p class="login-label">Avatar (einfaches Symbol)</p>', unsafe_allow_html=True)
+        avatar = st.text_input("", value="◻", key="login_avatar")
+
+        if st.button("Login", use_container_width=True):
+            if email == ADMIN_EMAIL and pw == ADMIN_PASSWORD:
+                st.session_state.role = "admin"
+                st.session_state.user_name = name or "Admin"
+                st.session_state.user_avatar = avatar or "◆"
+            else:
+                st.session_state.role = "user"
+                st.session_state.user_name = name or "User"
+                st.session_state.user_avatar = avatar or "◻"
+
+def logout():
+    st.session_state.role = None
+    st.session_state.user_name = None
+    st.session_state.user_avatar = "◻"
+    st.session_state.edit_post_id = None
+
+# -----------------------------
+# LOGIN FLOW
+# -----------------------------
+if st.session_state.role is None:
+    login_screen()
+    # Wenn nach Login-Interaktion eine Rolle gesetzt wurde, direkt weiter
+    if st.session_state.role is None:
+        st.stop()
+
+# -----------------------------
 # SIDEBAR: PROFIL & FILTER
 # -----------------------------
 st.sidebar.markdown("### Profil")
@@ -212,7 +260,8 @@ st.sidebar.write(f"Rolle: `{st.session_state.role}`")
 
 if st.sidebar.button("Logout", use_container_width=True):
     logout()
-    st.stop()
+    # direkt wieder Login anzeigen
+    st.experimental_rerun()
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Filter")
@@ -244,7 +293,7 @@ with col_nav_left:
         <div class="top-nav">
             <div class="top-nav-left">
                 <span class="top-nav-title">Blog</span>
-                <span class="badge">{'Admin' if st.session_state.role=='admin' else ('User' if st.session_state.role=='user' else 'Visitor')}</span>
+                <span class="badge">{'ADMIN' if st.session_state.role=='admin' else ('USER' if st.session_state.role=='user' else 'VISITOR')}</span>
             </div>
         </div>
         """,
@@ -285,13 +334,13 @@ def like_post(post):
 def render_post_card(post):
     st.markdown('<div class="post-card">', unsafe_allow_html=True)
 
-    # Bild oben
+    # Bild oben, etwas schmaler
     if post.get("image_path") and os.path.exists(post["image_path"]):
-        st.image(post["image_path"], use_column_width=True)
+        st.image(post["image_path"], width=480)
         st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     # Titel & Meta
-    st.markdown(f"<div class='post-title'>{post['title']}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='post-title'>{post['title'].upper()}</div>", unsafe_allow_html=True)
     st.markdown(
         f"<div class='post-meta'>{post['date']} • Kategorie: {post.get('category','–')}</div>",
         unsafe_allow_html=True,
@@ -306,6 +355,7 @@ def render_post_card(post):
         if st.session_state.role in ["admin", "user"]:
             if st.button(f"❤ {post.get('likes',0)}", key=f"like_{post['id']}"):
                 like_post(post)
+                st.experimental_rerun()
         else:
             st.caption(f"{post.get('likes',0)} × ❤")
     with col2:
@@ -341,6 +391,7 @@ def render_post_card(post):
                         }
                     )
                     save_posts(posts)
+                    st.experimental_rerun()
                 else:
                     st.error("Bitte Name und Kommentar eingeben.")
 
@@ -448,9 +499,11 @@ if st.session_state.role == "admin" and len(tab_objects) > 3:
                     if st.button("Löschen", key=f"del_{post['id']}"):
                         posts.remove(post)
                         save_posts(posts)
+                        st.experimental_rerun()
                 with col2:
                     if st.button("Bearbeiten", key=f"edit_{post['id']}"):
                         st.session_state.edit_post_id = post["id"]
+                        st.experimental_rerun()
 
             if st.session_state.edit_post_id:
                 post = next((p for p in posts if p["id"] == st.session_state.edit_post_id), None)
@@ -470,5 +523,6 @@ if st.session_state.role == "admin" and len(tab_objects) > 3:
                         save_posts(posts)
                         st.success("Beitrag aktualisiert.")
                         st.session_state.edit_post_id = None
+                        st.experimental_rerun()
                 else:
                     st.session_state.edit_post_id = None
