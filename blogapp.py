@@ -34,7 +34,7 @@ def save_posts(posts):
 posts = load_posts()
 
 # -----------------------------
-# SESSION STATE
+# SESSION STATE INITIALISIERUNG
 # -----------------------------
 if "role" not in st.session_state:
     st.session_state.role = None  # "admin", "user", "visitor"
@@ -42,13 +42,13 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = None
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = "🙂"
-if "do_rerun" not in st.session_state:
-    st.session_state.do_rerun = False
-if "edit_post" not in st.session_state:
-    st.session_state.edit_post = None
+if "page" not in st.session_state:
+    st.session_state.page = "login"  # "login" oder "app"
+if "edit_post_id" not in st.session_state:
+    st.session_state.edit_post_id = None
 
 # -----------------------------
-# LOGIN / ROLLEN
+# LOGIN / LOGOUT
 # -----------------------------
 def login_screen():
     st.markdown(
@@ -59,17 +59,16 @@ def login_screen():
         unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("👀 Besucher")
-        st.write("Nur lesen, keine Kommentare, keine Aktionen.")
-        if st.button("Als Besucher fortfahren"):
+    choice = st.radio("Wie möchtest du fortfahren:", ["Als Besucher", "Einloggen"])
+
+    if choice == "Als Besucher":
+        if st.button("Weiter als Besucher"):
             st.session_state.role = "visitor"
             st.session_state.user_name = "Besucher"
             st.session_state.user_avatar = "👀"
-            st.session_state.do_rerun = True
+            st.session_state.page = "app"
 
-    with col2:
+    else:
         st.subheader("🔐 Einloggen")
         email = st.text_input("E-Mail")
         pw = st.text_input("Passwort", type="password")
@@ -85,20 +84,24 @@ def login_screen():
                 st.session_state.role = "user"
                 st.session_state.user_name = name or "User"
                 st.session_state.user_avatar = avatar or "🙂"
-            st.session_state.do_rerun = True
 
-# Wenn noch keine Rolle gesetzt ist → Login anzeigen
-if st.session_state.role is None:
+            st.session_state.page = "app"
+
+def logout():
+    st.session_state.role = None
+    st.session_state.user_name = None
+    st.session_state.user_avatar = "🙂"
+    st.session_state.page = "login"
+    st.session_state.edit_post_id = None
+
+# -----------------------------
+# HAUPT-NAVIGATION (LOGIN / APP)
+# -----------------------------
+if st.session_state.page == "login":
     login_screen()
-
-# Rerun nach Login-/Besucher-Auswahl
-if st.session_state.do_rerun:
-    st.session_state.do_rerun = False
-    st.experimental_rerun()
-
-# Wenn nach Rerun immer noch keine Rolle da ist, stoppen
-if st.session_state.role is None:
     st.stop()
+
+# Ab hier: Benutzer ist in der App (visitor / user / admin)
 
 # -----------------------------
 # DARK MODE + GLOBAL STYLING
@@ -139,10 +142,19 @@ else:
     )
 
 # -----------------------------
-# NAVIGATION
+# SIDEBAR: USER INFO & LOGOUT
 # -----------------------------
 st.sidebar.title("📚 Navigation")
+st.sidebar.write(f"👤 {st.session_state.user_avatar} {st.session_state.user_name}")
+st.sidebar.write(f"Rolle: **{st.session_state.role}**")
 
+if st.sidebar.button("🚪 Logout"):
+    logout()
+    st.experimental_rerun()
+
+# -----------------------------
+# NAVIGATIONSMENÜ
+# -----------------------------
 if st.session_state.role == "admin":
     menu = st.sidebar.radio(
         "Seite wählen",
@@ -154,10 +166,6 @@ else:
 search_query = st.sidebar.text_input("🔍 Suche")
 category_filter = st.sidebar.text_input("Kategorie filtern")
 posts_per_page = st.sidebar.slider("Beiträge pro Seite", 1, 10, 3)
-
-st.sidebar.markdown("---")
-st.sidebar.write(f"👤 Eingeloggt als: {st.session_state.user_avatar} {st.session_state.user_name}")
-st.sidebar.write(f"Rolle: **{st.session_state.role}**")
 
 # -----------------------------
 # HILFSFUNKTIONEN
@@ -267,7 +275,7 @@ def render_post(post, compact=False):
         st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# BLOG LESEN (mit Pagination)
+# SEITE: BLOG LESEN
 # -----------------------------
 if menu == "📖 Blog lesen":
     st.markdown("## 📖 Blog")
@@ -294,7 +302,7 @@ if menu == "📖 Blog lesen":
         st.caption(f"Seite {page} von {total_pages}")
 
 # -----------------------------
-# BEITRAG ERSTELLEN (nur Admin)
+# SEITE: BEITRAG ERSTELLEN (nur Admin)
 # -----------------------------
 if menu == "✍️ Beitrag erstellen" and st.session_state.role == "admin":
     st.markdown("## ✍️ Neuen Beitrag erstellen")
@@ -343,7 +351,7 @@ if menu == "✍️ Beitrag erstellen" and st.session_state.role == "admin":
             st.balloons()
 
 # -----------------------------
-# ADMIN PANEL (nur Admin)
+# SEITE: ADMIN PANEL (nur Admin)
 # -----------------------------
 if menu == "⚙️ Admin Panel" and st.session_state.role == "admin":
     st.markdown("## ⚙️ Admin Panel")
@@ -366,29 +374,32 @@ if menu == "⚙️ Admin Panel" and st.session_state.role == "admin":
                         st.experimental_rerun()
                 with col2:
                     if st.button("✏️ Bearbeiten", key=f"edit_{post['id']}"):
-                        st.session_state.edit_post = post
+                        st.session_state.edit_post_id = post["id"]
                         st.experimental_rerun()
                 with col3:
                     st.write(f"Kommentare: {len(post.get('comments', []))}")
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
-        if st.session_state.edit_post is not None:
-            post = st.session_state.edit_post
-            st.markdown("---")
-            st.markdown("### ✏️ Beitrag bearbeiten")
+        if st.session_state.edit_post_id is not None:
+            post = next((p for p in posts if p["id"] == st.session_state.edit_post_id), None)
+            if post:
+                st.markdown("---")
+                st.markdown("### ✏️ Beitrag bearbeiten")
 
-            new_title = st.text_input("Titel", value=post["title"])
-            new_category = st.text_input("Kategorie", value=post.get("category", ""))
-            new_tags = st.text_input("Tags", value=", ".join(post.get("tags", [])))
-            new_content = st.text_area("Inhalt", value=post["content"], height=250)
+                new_title = st.text_input("Titel", value=post["title"])
+                new_category = st.text_input("Kategorie", value=post.get("category", ""))
+                new_tags = st.text_input("Tags", value=", ".join(post.get("tags", [])))
+                new_content = st.text_area("Inhalt", value=post["content"], height=250)
 
-            if st.button("Änderungen speichern"):
-                post["title"] = new_title
-                post["category"] = new_category
-                post["tags"] = [t.strip() for t in new_tags.split(",") if t.strip()]
-                post["content"] = new_content
-                save_posts(posts)
-                st.success("Beitrag aktualisiert.")
-                st.session_state.edit_post = None
-                st.experimental_rerun()
+                if st.button("Änderungen speichern"):
+                    post["title"] = new_title
+                    post["category"] = new_category
+                    post["tags"] = [t.strip() for t in new_tags.split(",") if t.strip()]
+                    post["content"] = new_content
+                    save_posts(posts)
+                    st.success("Beitrag aktualisiert.")
+                    st.session_state.edit_post_id = None
+                    st.experimental_rerun()
+            else:
+                st.session_state.edit_post_id = None
