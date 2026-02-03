@@ -45,7 +45,7 @@ if "user_avatar" not in st.session_state:
 if "edit_post_id" not in st.session_state:
     st.session_state.edit_post_id = None
 if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
+    st.session_state.dark_mode = True  # Dark Mode default
 
 # -----------------------------
 # GLOBAL FONTS & BASE CSS
@@ -259,6 +259,7 @@ def login_screen():
             st.session_state.role = "visitor"
             st.session_state.user_name = "Besucher"
             st.session_state.user_avatar = "◻"
+            st.rerun()  # Login-Seite komplett verlassen
     else:
         st.markdown('<p class="login-label">Einloggen</p>', unsafe_allow_html=True)
         email = st.text_input("E-Mail")
@@ -277,6 +278,7 @@ def login_screen():
                 st.session_state.role = "user"
                 st.session_state.user_name = name or "User"
                 st.session_state.user_avatar = avatar or "◻"
+            st.rerun()  # Login-Seite komplett verlassen
 
 def logout():
     st.session_state.role = None
@@ -289,8 +291,7 @@ def logout():
 # -----------------------------
 if st.session_state.role is None:
     login_screen()
-    if st.session_state.role is None:
-        st.stop()
+    st.stop()
 
 # -----------------------------
 # SIDEBAR: PROFIL, FILTER, ABOUT
@@ -398,7 +399,6 @@ def render_post_card(post):
         unsafe_allow_html=True,
     )
 
-    # Kategorie & Tags als Chips
     chips_html = ""
     if post.get("category"):
         chips_html += f"<span class='chip chip-category'>{post['category']}</span>"
