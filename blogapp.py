@@ -42,6 +42,10 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = None
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = "🙂"
+if "do_rerun" not in st.session_state:
+    st.session_state.do_rerun = False
+if "edit_post" not in st.session_state:
+    st.session_state.edit_post = None
 
 # -----------------------------
 # LOGIN / ROLLEN
@@ -62,7 +66,8 @@ def login_screen():
         if st.button("Als Besucher fortfahren"):
             st.session_state.role = "visitor"
             st.session_state.user_name = "Besucher"
-            st.experimental_rerun()
+            st.session_state.user_avatar = "👀"
+            st.session_state.do_rerun = True
 
     with col2:
         st.subheader("🔐 Einloggen")
@@ -76,17 +81,23 @@ def login_screen():
                 st.session_state.role = "admin"
                 st.session_state.user_name = name or "Admin"
                 st.session_state.user_avatar = avatar or "👑"
-                st.success("Admin erfolgreich eingeloggt.")
-                st.experimental_rerun()
             else:
                 st.session_state.role = "user"
                 st.session_state.user_name = name or "User"
                 st.session_state.user_avatar = avatar or "🙂"
-                st.success("User erfolgreich eingeloggt.")
-                st.experimental_rerun()
+            st.session_state.do_rerun = True
 
+# Wenn noch keine Rolle gesetzt ist → Login anzeigen
 if st.session_state.role is None:
     login_screen()
+
+# Rerun nach Login-/Besucher-Auswahl
+if st.session_state.do_rerun:
+    st.session_state.do_rerun = False
+    st.experimental_rerun()
+
+# Wenn nach Rerun immer noch keine Rolle da ist, stoppen
+if st.session_state.role is None:
     st.stop()
 
 # -----------------------------
@@ -194,7 +205,11 @@ def render_post(post, compact=False):
                 st.write(f"👍 Likes: {post.get('likes', 0)}")
 
         with col_export:
-            export_text = f"# {post['title']}\n\n{post['content']}\n\nKategorie: {post.get('category','')}\nTags: {', '.join(post.get('tags', []))}"
+            export_text = (
+                f"# {post['title']}\n\n{post['content']}\n\n"
+                f"Kategorie: {post.get('category','')}\n"
+                f"Tags: {', '.join(post.get('tags', []))}"
+            )
             st.download_button(
                 "📄 Export (Markdown)",
                 data=export_text,
@@ -351,15 +366,15 @@ if menu == "⚙️ Admin Panel" and st.session_state.role == "admin":
                         st.experimental_rerun()
                 with col2:
                     if st.button("✏️ Bearbeiten", key=f"edit_{post['id']}"):
-                        st.session_state["edit_post"] = post
+                        st.session_state.edit_post = post
                         st.experimental_rerun()
                 with col3:
                     st.write(f"Kommentare: {len(post.get('comments', []))}")
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
-        if "edit_post" in st.session_state:
-            post = st.session_state["edit_post"]
+        if st.session_state.edit_post is not None:
+            post = st.session_state.edit_post
             st.markdown("---")
             st.markdown("### ✏️ Beitrag bearbeiten")
 
@@ -375,5 +390,5 @@ if menu == "⚙️ Admin Panel" and st.session_state.role == "admin":
                 post["content"] = new_content
                 save_posts(posts)
                 st.success("Beitrag aktualisiert.")
-                del st.session_state["edit_post"]
+                st.session_state.edit_post = None
                 st.experimental_rerun()
