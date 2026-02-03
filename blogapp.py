@@ -15,7 +15,7 @@ ADMIN_PASSWORD = "123456"
 
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
-st.set_page_config(page_title="Mein Blog", page_icon="📝", layout="wide")
+st.set_page_config(page_title="Mein Blog", page_icon="✎", layout="wide")
 
 # -----------------------------
 # LOKALER SPEICHER
@@ -40,7 +40,7 @@ if "role" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 if "user_avatar" not in st.session_state:
-    st.session_state.user_avatar = "🙂"
+    st.session_state.user_avatar = "◻"
 if "page" not in st.session_state:
     st.session_state.page = "login"
 if "edit_post_id" not in st.session_state:
@@ -53,46 +53,44 @@ def login_screen():
     st.markdown(
         """
         <div style="text-align:center; margin-top:40px; margin-bottom:30px;">
-            <h1 style="margin-bottom:0;">📝 Dein moderner Blog</h1>
-            <p style="color:gray; margin-top:4px;">Schreiben. Lesen. Teilen. Einfach & schön.</p>
+            <h1 style="margin-bottom:4px; font-family:'EB Garamond', serif;">Dein Blog</h1>
+            <p style="color:#6b7280; margin-top:0; font-size:14px;">Schreiben. Lesen. Denken. Minimal & klar.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2)
+    choice = st.radio("Modus wählen", ["Als Besucher fortfahren", "Einloggen"])
 
-    with col1:
-        st.subheader("👀 Als Besucher")
-        st.write("Schnell reinschauen, ohne Account. Nur lesen, keine Kommentare.")
+    if choice == "Als Besucher fortfahren":
         if st.button("Weiter als Besucher", use_container_width=True):
             st.session_state.role = "visitor"
             st.session_state.user_name = "Besucher"
-            st.session_state.user_avatar = "👀"
+            st.session_state.user_avatar = "◻"
             st.session_state.page = "app"
 
-    with col2:
-        st.subheader("🔐 Einloggen")
+    else:
+        st.subheader("Einloggen")
         email = st.text_input("E-Mail")
         pw = st.text_input("Passwort", type="password")
         name = st.text_input("Anzeigename")
-        avatar = st.text_input("Avatar (Emoji)", value="🙂")
+        avatar = st.text_input("Avatar (einfaches Symbol)", value="◻")
 
         if st.button("Login", use_container_width=True):
             if email == ADMIN_EMAIL and pw == ADMIN_PASSWORD:
                 st.session_state.role = "admin"
                 st.session_state.user_name = name or "Admin"
-                st.session_state.user_avatar = avatar or "👑"
+                st.session_state.user_avatar = avatar or "◆"
             else:
                 st.session_state.role = "user"
                 st.session_state.user_name = name or "User"
-                st.session_state.user_avatar = avatar or "🙂"
+                st.session_state.user_avatar = avatar or "◻"
             st.session_state.page = "app"
 
 def logout():
     st.session_state.role = None
     st.session_state.user_name = None
-    st.session_state.user_avatar = "🙂"
+    st.session_state.user_avatar = "◻"
     st.session_state.page = "login"
     st.session_state.edit_post_id = None
 
@@ -104,92 +102,120 @@ if st.session_state.page == "login":
     st.stop()
 
 # -----------------------------
-# THEME & GLOBAL STYLES
+# FONTS & THEME CSS
 # -----------------------------
-dark_mode = st.sidebar.toggle("🌙 Dark Mode", value=False)
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap');
 
-base_css = """
-<style>
-body, .stApp {
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-.post-card {
-    padding: 18px;
-    border-radius: 14px;
-    margin-bottom: 18px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.06);
-}
-.post-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-.post-meta {
-    font-size: 0.8rem;
-    color: #888888;
-    margin-bottom: 10px;
-}
-.top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0 18px 0;
-    border-bottom: 1px solid rgba(200,200,200,0.4);
-    margin-bottom: 10px;
-}
-.top-nav-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.top-nav-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-}
-.badge {
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:999px;
-    font-size:0.7rem;
-    background:rgba(0,0,0,0.06);
-}
-</style>
-"""
+    html, body, .stApp {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .post-card {
+        padding: 18px 20px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .post-title {
+        font-family: 'EB Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .post-meta {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .post-content {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 10px;
+    }
+
+    .top-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .top-nav-title {
+        font-family: 'EB Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .badge {
+        display:inline-block;
+        padding:2px 10px;
+        border-radius:999px;
+        font-size:0.7rem;
+        border:1px solid #d1d5db;
+        color:#4b5563;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+dark_mode = st.sidebar.toggle("Dark Mode", value=False)
 
 if dark_mode:
-    theme_css = """
-    <style>
-    body, .stApp { background-color: #05070b !important; color: #f5f5f5 !important; }
-    .post-card { background-color: #111827 !important; border: 1px solid #1f2937 !important; }
-    .post-meta { color: #9ca3af !important; }
-    .top-nav { border-bottom-color: #1f2937 !important; }
-    </style>
-    """
+    st.markdown(
+        """
+        <style>
+        body, .stApp { background-color: #05070b !important; color: #f9fafb !important; }
+        .post-card { background-color: #111827 !important; border-color: #1f2937 !important; }
+        .post-meta { color: #9ca3af !important; }
+        .top-nav { border-bottom-color: #1f2937 !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 else:
-    theme_css = """
-    <style>
-    body, .stApp { background-color: #f5f5f7 !important; color: #111827 !important; }
-    .post-card { background-color: #ffffff !important; border: 1px solid #e5e7eb !important; }
-    .post-meta { color: #6b7280 !important; }
-    .top-nav { border-bottom-color: #e5e7eb !important; }
-    </style>
-    """
-
-st.markdown(base_css + theme_css, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <style>
+        body, .stApp { background-color: #f5f5f7 !important; color: #111827 !important; }
+        .post-card { background-color: #ffffff !important; border-color: #e5e7eb !important; }
+        .post-meta { color: #6b7280 !important; }
+        .top-nav { border-bottom-color: #e5e7eb !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # -----------------------------
-# SIDEBAR: PROFIL & NAVIGATION
+# SIDEBAR: PROFIL & FILTER
 # -----------------------------
-st.sidebar.markdown("### 👤 Profil")
+st.sidebar.markdown("### Profil")
 st.sidebar.write(f"{st.session_state.user_avatar} **{st.session_state.user_name}**")
 st.sidebar.write(f"Rolle: `{st.session_state.role}`")
 
-if st.sidebar.button("🚪 Logout", use_container_width=True):
+if st.sidebar.button("Logout", use_container_width=True):
     logout()
-    st.experimental_rerun()
+    st.stop()
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 🔎 Filter")
+st.sidebar.markdown("### Filter")
 
 search_query = st.sidebar.text_input("Suche im Titel/Inhalt")
 category_filter = st.sidebar.text_input("Kategorie")
@@ -198,10 +224,10 @@ posts_per_page = st.sidebar.slider("Beiträge pro Seite", 1, 10, 3)
 st.sidebar.markdown("---")
 if posts:
     top_liked = sorted(posts, key=lambda p: p.get("likes", 0), reverse=True)[:3]
-    st.sidebar.markdown("### ⭐ Beliebteste Beiträge")
+    st.sidebar.markdown("### Beliebteste Beiträge")
     if top_liked:
         for p in top_liked:
-            st.sidebar.write(f"👍 {p.get('likes',0)} – {p['title']}")
+            st.sidebar.write(f"{p.get('likes',0)} × ❤ – {p['title']}")
     else:
         st.sidebar.caption("Noch keine Likes.")
 else:
@@ -217,7 +243,7 @@ with col_nav_left:
         f"""
         <div class="top-nav">
             <div class="top-nav-left">
-                <span class="top-nav-title">📝 Blog</span>
+                <span class="top-nav-title">Blog</span>
                 <span class="badge">{'Admin' if st.session_state.role=='admin' else ('User' if st.session_state.role=='user' else 'Visitor')}</span>
             </div>
         </div>
@@ -226,17 +252,17 @@ with col_nav_left:
     )
 
 with col_nav_right:
-    pass  # Platz für später (z.B. globale Suche, Filter-Buttons etc.)
+    pass
 
 # -----------------------------
-# MENÜ OBEN (statt nur Sidebar)
+# TABS
 # -----------------------------
-tabs = ["📖 Blog", "📊 Dashboard"]
+tabs = ["Beiträge", "Dashboard"]
 if st.session_state.role == "admin":
-    tabs.append("✍️ Neuer Beitrag")
-    tabs.append("⚙️ Admin Panel")
+    tabs.append("Neuer Beitrag")
+    tabs.append("Admin Panel")
 
-active_tab = st.tabs(tabs)
+tab_objects = st.tabs(tabs)
 
 # -----------------------------
 # HILFSFUNKTIONEN
@@ -259,40 +285,44 @@ def like_post(post):
 def render_post_card(post):
     st.markdown('<div class="post-card">', unsafe_allow_html=True)
 
+    # Bild oben
+    if post.get("image_path") and os.path.exists(post["image_path"]):
+        st.image(post["image_path"], use_column_width=True)
+        st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+    # Titel & Meta
     st.markdown(f"<div class='post-title'>{post['title']}</div>", unsafe_allow_html=True)
     st.markdown(
         f"<div class='post-meta'>{post['date']} • Kategorie: {post.get('category','–')}</div>",
         unsafe_allow_html=True,
     )
 
-    cols = st.columns([2, 1])
-    with cols[0]:
-        st.markdown(post["content"])
-    with cols[1]:
-        if post.get("image_path") and os.path.exists(post["image_path"]):
-            st.image(post["image_path"], width=220)
+    # Inhalt
+    st.markdown(f"<div class='post-content'>{post['content']}</div>", unsafe_allow_html=True)
 
+    # Aktionen
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1:
         if st.session_state.role in ["admin", "user"]:
-            if st.button(f"👍 {post.get('likes',0)}", key=f"like_{post['id']}"):
+            if st.button(f"❤ {post.get('likes',0)}", key=f"like_{post['id']}"):
                 like_post(post)
-                st.experimental_rerun()
         else:
-            st.caption(f"👍 {post.get('likes',0)} Likes")
+            st.caption(f"{post.get('likes',0)} × ❤")
     with col2:
         export_text = f"# {post['title']}\n\n{post['content']}"
-        st.download_button("📄 Export", export_text, file_name=f"{post['title']}.md", key=f"exp_{post['id']}")
+        st.download_button("Export", export_text, file_name=f"{post['title']}.md", key=f"exp_{post['id']}")
     with col3:
-        st.caption(f"Tags: {', '.join(post.get('tags', [])) or '–'}")
+        tags = ", ".join(post.get("tags", [])) or "–"
+        st.caption(f"Tags: {tags}")
 
+    # Kommentare
     st.markdown("**Kommentare**")
     comments = post.get("comments", [])
     if not comments:
         st.caption("_Noch keine Kommentare._")
     else:
         for c in comments:
-            st.markdown(f"- {c.get('avatar','🙂')} **{c['author']}**: {c['text']}")
+            st.markdown(f"- {c.get('avatar','◻')} **{c['author']}**: {c['text']}")
 
     if st.session_state.role in ["admin", "user"]:
         with st.expander("Kommentar schreiben"):
@@ -305,13 +335,12 @@ def render_post_card(post):
                     post.setdefault("comments", []).append(
                         {
                             "author": author,
-                            "avatar": avatar or "🙂",
+                            "avatar": avatar or "◻",
                             "text": text,
                             "date": datetime.now().strftime("%d.%m.%Y %H:%M"),
                         }
                     )
                     save_posts(posts)
-                    st.experimental_rerun()
                 else:
                     st.error("Bitte Name und Kommentar eingeben.")
 
@@ -319,10 +348,10 @@ def render_post_card(post):
     st.markdown("")
 
 # -----------------------------
-# TAB: BLOG
+# TAB: BEITRÄGE
 # -----------------------------
-with active_tab[0]:
-    st.markdown("### 📖 Alle Beiträge")
+with tab_objects[0]:
+    st.markdown("### Beiträge")
 
     filtered = filter_posts(posts, search_query, category_filter)
     filtered = list(reversed(filtered))  # neueste zuerst
@@ -337,7 +366,7 @@ with active_tab[0]:
         start = (page - 1) * posts_per_page
         end = start + posts_per_page
 
-        st.caption(f"Seite {page} von {total_pages} • {total} Beiträge gesamt")
+        st.caption(f"Seite {page} von {total_pages} • {total} Beiträge")
 
         for post in filtered[start:end]:
             render_post_card(post)
@@ -345,8 +374,8 @@ with active_tab[0]:
 # -----------------------------
 # TAB: DASHBOARD
 # -----------------------------
-with active_tab[1]:
-    st.markdown("### 📊 Dashboard")
+with tab_objects[1]:
+    st.markdown("### Dashboard")
 
     total_posts = len(posts)
     total_comments = sum(len(p.get("comments", [])) for p in posts)
@@ -360,14 +389,14 @@ with active_tab[1]:
     st.markdown("---")
     st.markdown("#### Letzte Beiträge")
     for p in list(reversed(posts))[:5]:
-        st.write(f"- {p['title']} ({p['date']}) – 👍 {p.get('likes',0)}")
+        st.write(f"- {p['title']} ({p['date']}) – {p.get('likes',0)} × ❤")
 
 # -----------------------------
-# TAB: NEUER BEITRAG (nur Admin)
+# TAB: NEUER BEITRAG (Admin)
 # -----------------------------
-if st.session_state.role == "admin" and len(active_tab) > 2:
-    with active_tab[2]:
-        st.markdown("### ✍️ Neuer Beitrag")
+if st.session_state.role == "admin" and len(tab_objects) > 2:
+    with tab_objects[2]:
+        st.markdown("### Neuer Beitrag")
 
         title = st.text_input("Titel")
         category = st.text_input("Kategorie")
@@ -401,30 +430,27 @@ if st.session_state.role == "admin" and len(active_tab) > 2:
                 posts.append(new_post)
                 save_posts(posts)
                 st.success("Beitrag gespeichert!")
-                st.balloons()
 
 # -----------------------------
-# TAB: ADMIN PANEL (nur Admin)
+# TAB: ADMIN PANEL (Admin)
 # -----------------------------
-if st.session_state.role == "admin" and len(active_tab) > 3:
-    with active_tab[3]:
-        st.markdown("### ⚙️ Admin Panel")
+if st.session_state.role == "admin" and len(tab_objects) > 3:
+    with tab_objects[3]:
+        st.markdown("### Admin Panel")
 
         if not posts:
             st.info("Noch keine Beiträge vorhanden.")
         else:
             for post in posts:
-                st.markdown(f"**{post['title']}** – {post['date']} – 👍 {post.get('likes',0)}")
+                st.markdown(f"**{post['title']}** – {post['date']} – {post.get('likes',0)} × ❤")
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("🗑️ Löschen", key=f"del_{post['id']}"):
+                    if st.button("Löschen", key=f"del_{post['id']}"):
                         posts.remove(post)
                         save_posts(posts)
-                        st.experimental_rerun()
                 with col2:
-                    if st.button("✏️ Bearbeiten", key=f"edit_{post['id']}"):
+                    if st.button("Bearbeiten", key=f"edit_{post['id']}"):
                         st.session_state.edit_post_id = post["id"]
-                        st.experimental_rerun()
 
             if st.session_state.edit_post_id:
                 post = next((p for p in posts if p["id"] == st.session_state.edit_post_id), None)
@@ -444,6 +470,5 @@ if st.session_state.role == "admin" and len(active_tab) > 3:
                         save_posts(posts)
                         st.success("Beitrag aktualisiert.")
                         st.session_state.edit_post_id = None
-                        st.experimental_rerun()
                 else:
                     st.session_state.edit_post_id = None
